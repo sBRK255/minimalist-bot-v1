@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Bot Admin Panel - Minimalist Bot</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .header {
+            background-color: #075E54;
+            color: white;
+            padding: 1.5rem 0;
+            margin-bottom: 2rem;
+        }
+        .panel-card {
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        .card-header {
+            background-color: #128C7E;
+            color: white;
+            font-weight: bold;
+        }
+        .status-badge {
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+        }
+        .status-connected {
+            background-color: #25D366;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+        .status-disconnected {
+            background-color: #dc3545;
+            color: white;
+        }
+        @keyframes pulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+        .nav-pills .nav-link.active {
+            background-color: #25D366;
+        }
+        .nav-pills .nav-link {
+            color: #075E54;
+        }
+        .stats-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .stats-label {
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+        .command-card {
+            transition: all 0.2s ease;
+        }
+        .command-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .command-category {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            background-color: #e9ecef;
+            color: #495057;
+            display: inline-block;
+            margin-bottom: 0.5rem;
+        }
+        .command-name {
+            font-weight: bold;
+            color: #075E54;
+        }
+        .command-aliases {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        .chart-container {
+            height: 250px;
+            position: relative;
+        }
+        .usage-bar {
+            height: 2rem;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .progress-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1><i class="bi bi-robot"></i> Bot Admin Panel</h1>
+                <div class="d-flex align-items-center">
+                    <span id="connectionStatus" class="status-badge status-disconnected me-3">
+                        <i class="bi bi-plug-fill"></i> Disconnected
+                    </span>
+                    <div class="dropdown">
+                        <button class="btn btn-light dropdown-toggle" type="button" id="navDropdown" data-bs-toggle="dropdown">
+                            <i class="bi bi-list"></i> Navigation
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/"><i class="bi bi-house-fill"></i> Home</a></li>
+                            <li><a class="dropdown-item" href="/connect"><i class="bi bi-whatsapp"></i> Connection Panel</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/admin"><i class="bi bi-gear-fill"></i> Admin Panel</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="row">
+            <!-- Stats Overview -->
+            <div class="col-lg-12">
+                <div class="panel-card card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-graph-up"></i> Bot Statistics</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-4">
+                            <div class="col-md-3 col-sm-6">
+                                <div class="text-center">
+                                    <div class="stats-value" id="uptimeValue">0d 0h 0m 0s</div>
+                                    <div class="stats-label">Uptime</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="text-center">
+                                    <div class="stats-value" id="memoryValue">0 MB</div>
+                                    <div class="stats-label">Memory Usage</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="text-center">
+                                    <div class="stats-value" id="commandCount">0</div>
+                                    <div class="stats-label">Commands Available</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="text-center">
+                                    <div class="stats-value" id="nodeVersion">-</div>
+                                    <div class="stats-label">Node.js Version</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <h6>Memory Usage</h6>
+                                <div class="position-relative usage-bar">
+                                    <div id="memoryBar" class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
+                                    <div class="progress-label">0%</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>CPU Usage</h6>
+                                <div class="position-relative usage-bar">
+                                    <div id="cpuBar" class="progress-bar bg-info" role="progressbar" style="width: 0%"></div>
+                                    <div class="progress-label">0%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <div class="col-lg-12 mb-4">
+                <ul class="nav nav-pills" id="mainTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="commands-tab" data-bs-toggle="pill" data-bs-target="#commands-panel" type="button" role="tab">
+                            <i class="bi bi-terminal"></i> Commands
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="contacts-tab" data-bs-toggle="pill" data-bs-target="#contacts-panel" type="button" role="tab">
+                            <i class="bi bi-people"></i> Contacts
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="system-tab" data-bs-toggle="pill" data-bs-target="#system-panel" type="button" role="tab">
+                            <i class="bi bi-info-circle"></i> System
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="tab-content" id="mainTabContent">
+                <!-- Commands Panel -->
+                <div class="tab-pane fade show active" id="commands-panel" role="tabpanel">
+                    <div class="row">
+                        <!-- Commands List -->
+                        <div class="col-lg-8">
+                            <div class="panel-card card">
+                                <div class="card-header">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0"><i class="bi bi-terminal"></i> Available Commands</h5>
+                                        <div class="input-group" style="width: 300px;">
+                                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                            <input type="text" class="form-control" id="commandSearch" placeholder="Search commands">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div id="commandsList" class="row g-3">
+                                        <div class="text-center py-4">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                            <p class="mt-2">Loading commands...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- System Info -->
+                        <div class="col-lg-4">
+                            <div class="panel-card card mb-4">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="bi bi-gear-wide-connected"></i> Actions</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-grid gap-2">
+                                        <button id="refreshStatsBtn" class="btn btn-primary">
+                                            <i class="bi bi-arrow-clockwise"></i> Refresh Stats
+                                        </button>
+                                        <button id="restartBotBtn" class="btn btn-warning">
+                                            <i class="bi bi-arrow-repeat"></i> Restart Bot
+                                        </button>
+                                        <button id="clearCacheBtn" class="btn btn-secondary">
+                                            <i class="bi bi-trash"></i> Clear Command Cache
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contacts Panel -->
+                <div class="tab-pane fade" id="contacts-panel" role="tabpanel">
+                    <div class="row">
+                        <!-- Contacts List -->
+                        <div class="col-lg-5">
+                            <div class="panel-card card">
+                                <div class="card-header">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0"><i class="bi bi-people"></i> Contacts</h5>
+                                        <div class="input-group" style="width: 200px;">
+                                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                            <input type="text" class="form-control" id="contactSearch" placeholder="Search contacts">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="alert alert-info m-2 mb-0" id="contactStatusInfo" style="display: none;">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <strong>Contact Names Status:</strong>
+                                        <span id="contactStatusBadge" class="badge bg-warning">Needs Refresh</span>
+                                    </div>
+                                    <div class="progress mb-2" style="height: 15px;">
+                                        <div id="contactNameProgress" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                                    </div>
+                                    <small id="contactNameTip">To get more contact names, send the "contacts" command to your bot or use the refresh button below.</small>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="list-group list-group-flush" id="contactsList" style="max-height: 500px; overflow-y: auto;">
+                                        <div class="list-group-item text-center py-4">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                            <p class="mt-2">Loading contacts...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <button id="refreshContactsBtn" class="btn btn-sm btn-outline-primary w-100">
+                                        <i class="bi bi-arrow-clockwise"></i> Refresh Contacts
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Message Panel -->
+                        <div class="col-lg-7">
+                            <div class="panel-card card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="bi bi-chat-dots"></i> 
+                                        Send Message to: <span id="selectedContactName" class="text-primary">Select a contact</span>
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <form id="messageForm">
+                                        <input type="hidden" id="selectedContactJid" value="">
+                                        <div class="mb-3">
+                                            <label for="messageText" class="form-label">Message</label>
+                                            <textarea class="form-control" id="messageText" rows="5" placeholder="Type your message here..." required disabled></textarea>
+                                        </div>
+                                        <div class="d-grid">
+                                            <button type="submit" id="sendMessageBtn" class="btn btn-success" disabled>
+                                                <i class="bi bi-send"></i> Send Message
+                                            </button>
+                                        </div>
+                                    </form>
+                                    
+                                    <div class="mt-4">
+                                        <h6>Recent Messages</h6>
+                                        <div id="recentMessages" class="border rounded p-3 bg-light" style="max-height: 200px; overflow-y: auto;">
+                                            <p class="text-muted text-center">Select a contact to view messages</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Panel -->
+                <div class="tab-pane fade" id="system-panel" role="tabpanel">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="panel-card card">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> System Information</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <span>Platform</span>
+                                                    <span id="platform" class="badge bg-secondary">-</span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <span>Hostname</span>
+                                                    <span id="hostname" class="badge bg-secondary">-</span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <span>WhatsApp API</span>
+                                                    <span id="whatsappVersion" class="badge bg-success">@whiskeysockets/baileys</span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                    <span>Bot Version</span>
+                                                    <span id="botVersion" class="badge bg-primary">1.0.0</span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="card h-100">
+                                                <div class="card-body">
+                                                    <h6>System Actions</h6>
+                                                    <div class="d-grid gap-2">
+                                                        <button id="refreshSystemInfoBtn" class="btn btn-outline-primary">
+                                                            <i class="bi bi-arrow-clockwise"></i> Refresh System Info
+                                                        </button>
+                                                        <button id="restartBotBtn2" class="btn btn-outline-warning">
+                                                            <i class="bi bi-arrow-repeat"></i> Restart Bot
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Command Detail Modal -->
+    <div class="modal fade" id="commandDetailModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="bi bi-terminal"></i> <span id="modalCommandName">Command Name</span></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-sm-4 fw-bold">Category:</div>
+                        <div class="col-sm-8" id="modalCommandCategory">-</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 fw-bold">Aliases:</div>
+                        <div class="col-sm-8" id="modalCommandAliases">-</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 fw-bold">Description:</div>
+                        <div class="col-sm-8" id="modalCommandDescription">-</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 fw-bold">Usage:</div>
+                        <div class="col-sm-8" id="modalCommandUsage">-</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 fw-bold">Arguments:</div>
+                        <div class="col-sm-8" id="modalCommandArgs">-</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message Sent Modal -->
+    <div class="modal fade" id="messageSentModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="bi bi-check-circle"></i> Message Sent</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Your message has been successfully queued for sending.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Socket.io -->
+    <script src="/socket.io/socket.io.js"></script>
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Admin Panel Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const connectionStatus = document.getElementById('connectionStatus');
+            const commandsList = document.getElementById('commandsList');
+            const commandSearch = document.getElementById('commandSearch');
+            const refreshStatsBtn = document.getElementById('refreshStatsBtn');
+            const restartBotBtn = document.getElementById('restartBotBtn');
+            const clearCacheBtn = document.getElementById('clearCacheBtn');
+            
+            // Stats elements
+            const uptimeValue = document.getElementById('uptimeValue');
+            const memoryValue = document.getElementById('memoryValue');
+            const commandCount = document.getElementById('commandCount');
+            const nodeVersion = document.getElementById('nodeVersion');
+            const platform = document.getElementById('platform');
+            const hostname = document.getElementById('hostname');
+            const botVersion = document.getElementById('botVersion');
+            
+            // Usage bars
+            const memoryBar = document.getElementById('memoryBar');
+            const cpuBar = document.getElementById('cpuBar');
+            
+            // Modal elements
+            const modalCommandName = document.getElementById('modalCommandName');
+            const modalCommandCategory = document.getElementById('modalCommandCategory');
+            const modalCommandAliases = document.getElementById('modalCommandAliases');
+            const modalCommandDescription = document.getElementById('modalCommandDescription');
+            const modalCommandUsage = document.getElementById('modalCommandUsage');
+            const modalCommandArgs = document.getElementById('modalCommandArgs');
+            
+            // Contacts elements
+            const contactsList = document.getElementById('contactsList');
+            const contactSearch = document.getElementById('contactSearch');
+            const refreshContactsBtn = document.getElementById('refreshContactsBtn');
+            const selectedContactName = document.getElementById('selectedContactName');
+            const selectedContactJid = document.getElementById('selectedContactJid');
+            const messageText = document.getElementById('messageText');
+            const sendMessageBtn = document.getElementById('sendMessageBtn');
+            const messageForm = document.getElementById('messageForm');
+            const recentMessages = document.getElementById('recentMessages');
+            
+            // Initialize system info button
+            const refreshSystemInfoBtn = document.getElementById('refreshSystemInfoBtn');
+            const restartBotBtn2 = document.getElementById('restartBotBtn2');
+            
+            // Connect to Socket.io
+            const socket = io();
+            
+            // Add log entry
+            function addLogEntry(message, type = 'info') {
+                console.log(`[${type.toUpperCase()}] ${message}`);
+            }
+            
+            // Update UI for connection status
+            function updateConnectionStatus(status) {
+                if (status === 'connected') {
+                    connectionStatus.className = 'status-badge status-connected me-3';
+                    connectionStatus.innerHTML = '<i class="bi bi-plug-fill"></i> Connected';
+                } else {
+                    connectionStatus.className = 'status-badge status-disconnected me-3';
+                    connectionStatus.innerHTML = '<i class="bi bi-plug-fill"></i> Disconnected';
+                }
+            }
+            
+            // Format bytes to human-readable
+            function formatBytes(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+            
+            // Format uptime
+            function formatUptime(seconds) {
+                const days = Math.floor(seconds / (3600 * 24));
+                const hours = Math.floor((seconds % (3600 * 24)) / 3600);
+                const minutes = Math.floor((seconds % 3600) / 60);
+                const secs = Math.floor(seconds % 60);
+                
+                let result = '';
+                if (days > 0) result += `${days}d `;
+                if (hours > 0 || days > 0) result += `${hours}h `;
+                if (minutes > 0 || hours > 0 || days > 0) result += `${minutes}m `;
+                result += `${secs}s`;
+                
+                return result;
+            }
+            
+            // Fetch and display commands
+            async function fetchCommands() {
+                try {
+                    const response = await fetch('/api/commands');
+                    if (response.ok) {
+                        const data = await response.json();
+                        renderCommands(data.commands);
+                        commandCount.textContent = data.count;
+                        addLogEntry(`Loaded ${data.count} commands`);
+                    } else {
+                        addLogEntry('Failed to fetch commands', 'error');
+                        commandsList.innerHTML = '<div class="col-12 text-center text-danger py-3">Failed to load commands</div>';
+                    }
+                } catch (error) {
+                    addLogEntry(`Error fetching commands: ${error.message}`, 'error');
+                    commandsList.innerHTML = '<div class="col-12 text-center text-danger py-3">Error loading commands</div>';
+                }
+            }
+            
+            // Render commands in the UI
+            function renderCommands(commands) {
+                if (!commands || commands.length === 0) {
+                    commandsList.innerHTML = '<div class="col-12 text-center py-3">No commands available</div>';
+                    return;
+                }
+                
+                // Group commands by category
+                const commandsByCategory = {};
+                commands.forEach(cmd => {
+                    if (!commandsByCategory[cmd.category]) {
+                        commandsByCategory[cmd.category] = [];
+                    }
+                    commandsByCategory[cmd.category].push(cmd);
+                });
+                
+                // Build HTML
+                let html = '';
+                for (const [category, cmds] of Object.entries(commandsByCategory)) {
+                    html += `<div class="col-12 mb-2"><h6 class="border-bottom pb-2">${category}</h6></div>`;
+                    
+                    cmds.forEach(cmd => {
+                        html += `
+                        <div class="col-md-6 command-item" data-name="${cmd.name}" data-category="${cmd.category}">
+                            <div class="card command-card h-100">
+                                <div class="card-body">
+                                    <span class="command-category">${cmd.category}</span>
+                                    <h5 class="command-name">${cmd.name}</h5>
+                                    <p class="command-description mb-2">${cmd.description}</p>
+                                    <div class="command-aliases small text-muted mb-2">
+                                        ${cmd.aliases && cmd.aliases.length > 0 ? `Aliases: ${cmd.aliases.join(', ')}` : ''}
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-primary view-command-btn" 
+                                        data-name="${cmd.name}"
+                                        data-category="${cmd.category}"
+                                        data-aliases="${cmd.aliases ? cmd.aliases.join(', ') : ''}"
+                                        data-description="${cmd.description}"
+                                        data-usage="${cmd.usage}"
+                                        data-args="${cmd.hasArgs ? 'Yes' : 'No'}">
+                                        <i class="bi bi-info-circle"></i> Details
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        `;
+                    });
+                }
+                
+                commandsList.innerHTML = html;
+                
+                // Add event listeners to view command buttons
+                document.querySelectorAll('.view-command-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const name = this.getAttribute('data-name');
+                        const category = this.getAttribute('data-category');
+                        const aliases = this.getAttribute('data-aliases');
+                        const description = this.getAttribute('data-description');
+                        const usage = this.getAttribute('data-usage');
+                        const args = this.getAttribute('data-args');
+                        
+                        modalCommandName.textContent = name;
+                        modalCommandCategory.textContent = category;
+                        modalCommandAliases.textContent = aliases || '-';
+                        modalCommandDescription.textContent = description;
+                        modalCommandUsage.textContent = usage;
+                        modalCommandArgs.textContent = args;
+                        
+                        const modal = new bootstrap.Modal(document.getElementById('commandDetailModal'));
+                        modal.show();
+                    });
+                });
+            }
+            
+            // Fetch and display system stats
+            async function fetchStats() {
+                try {
+                    const response = await fetch('/api/stats');
+                    if (response.ok) {
+                        const data = await response.json();
+                        
+                        // Update stats values
+                        uptimeValue.textContent = formatUptime(data.uptime);
+                        memoryValue.textContent = formatBytes(data.memory.heapUsed);
+                        nodeVersion.textContent = data.nodeVersion;
+                        platform.textContent = data.platform;
+                        hostname.textContent = data.hostname;
+                        botVersion.textContent = data.botVersion;
+                        
+                        // Update usage bars
+                        const memoryPercent = (data.memory.heapUsed / data.memory.heapTotal) * 100;
+                        memoryBar.style.width = `${memoryPercent}%`;
+                        memoryBar.nextElementSibling.textContent = `${Math.round(memoryPercent)}%`;
+                        
+                        const cpuPercent = data.cpuUsage || 0;
+                        cpuBar.style.width = `${cpuPercent}%`;
+                        cpuBar.nextElementSibling.textContent = `${Math.round(cpuPercent)}%`;
+                        
+                        addLogEntry('Stats updated');
+                    } else {
+                        addLogEntry('Failed to fetch stats', 'error');
+                    }
+                } catch (error) {
+                    addLogEntry(`Error fetching stats: ${error.message}`, 'error');
+                }
+            }
+            
+            // Command search functionality
+            commandSearch.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                document.querySelectorAll('.command-item').forEach(item => {
+                    const name = item.getAttribute('data-name').toLowerCase();
+                    const category = item.getAttribute('data-category').toLowerCase();
+                    const shouldShow = name.includes(searchTerm) || category.includes(searchTerm);
+                    item.style.display = shouldShow ? '' : 'none';
+                });
+            });
+            
+            // Button event listeners
+            refreshStatsBtn.addEventListener('click', fetchStats);
+            
+            restartBotBtn.addEventListener('click', async function() {
+                if (confirm('Are you sure you want to restart the bot?')) {
+                    try {
+                        const response = await fetch('/api/restart', { method: 'POST' });
+                        if (response.ok) {
+                            addLogEntry('Bot restart initiated');
+                            alert('Bot restart initiated. This may take a few moments.');
+                        } else {
+                            addLogEntry('Failed to restart bot', 'error');
+                            alert('Failed to restart the bot. Please check the server logs.');
+                        }
+                    } catch (error) {
+                        addLogEntry(`Error restarting bot: ${error.message}`, 'error');
+                        alert(`Error: ${error.message}`);
+                    }
+                }
+            });
+            
+            clearCacheBtn.addEventListener('click', async function() {
+                if (confirm('Are you sure you want to clear the command cache?')) {
+                    try {
+                        const response = await fetch('/api/clear-cache', { method: 'POST' });
+                        if (response.ok) {
+                            addLogEntry('Command cache cleared');
+                            alert('Command cache cleared. Refreshing commands list...');
+                            fetchCommands();
+                        } else {
+                            addLogEntry('Failed to clear command cache', 'error');
+                            alert('Failed to clear command cache. Please check the server logs.');
+                        }
+                    } catch (error) {
+                        addLogEntry(`Error clearing cache: ${error.message}`, 'error');
+                        alert(`Error: ${error.message}`);
+                    }
+                }
+            });
+            
+            // Socket.io event listeners
+            socket.on('connect', function() {
+                addLogEntry('Connected to server');
+            });
+            
+            socket.on('connection-status', function(data) {
+                updateConnectionStatus(data.status);
+                addLogEntry(`Bot status: ${data.status}`);
+            });
+            
+            socket.on('stats-update', function(data) {
+                // Update stats from real-time events
+                uptimeValue.textContent = formatUptime(data.uptime);
+                memoryValue.textContent = formatBytes(data.memory.heapUsed);
+                
+                const memoryPercent = (data.memory.heapUsed / data.memory.heapTotal) * 100;
+                memoryBar.style.width = `${memoryPercent}%`;
+                memoryBar.nextElementSibling.textContent = `${Math.round(memoryPercent)}%`;
+                
+                const cpuPercent = data.cpuUsage || 0;
+                cpuBar.style.width = `${cpuPercent}%`;
+                cpuBar.nextElementSibling.textContent = `${Math.round(cpuPercent)}%`;
+            });
+            
+            // Fetch and display contacts
+            async function fetchContacts() {
+                try {
+                    const response = await fetch('/api/contacts');
+                    if (response.ok) {
+                        const data = await response.json();
+                        
+                        // Show contact status info
+                        document.getElementById('contactStatusInfo').style.display = 'block';
+                        
+                        // Update contact name progress
+                        const progressBar = document.getElementById('contactNameProgress');
+                        progressBar.style.width = `${data.namePercentage}%`;
+                        progressBar.textContent = `${data.namePercentage}%`;
+                        progressBar.setAttribute('aria-valuenow', data.namePercentage);
+                        
+                        // Update status badge
+                        const statusBadge = document.getElementById('contactStatusBadge');
+                        if (data.namePercentage < 30) {
+                            statusBadge.className = "badge bg-danger";
+                            statusBadge.textContent = "Poor";
+                            document.getElementById('contactNameTip').innerHTML = "Most contacts are showing only phone numbers. Send <strong>\"contacts\"</strong> to your bot to fetch real names.";
+                        } else if (data.namePercentage < 70) {
+                            statusBadge.className = "badge bg-warning";
+                            statusBadge.textContent = "Incomplete";
+                            document.getElementById('contactNameTip').innerHTML = "Some contacts have real names. For more, send <strong>\"contacts\"</strong> to your bot.";
+                        } else {
+                            statusBadge.className = "badge bg-success";
+                            statusBadge.textContent = "Good";
+                            document.getElementById('contactNameTip').innerHTML = "Most contacts have real names. Great!";
+                        }
+                        
+                        // Update progress bar color
+                        if (data.namePercentage < 30) {
+                            progressBar.className = "progress-bar bg-danger";
+                        } else if (data.namePercentage < 70) {
+                            progressBar.className = "progress-bar bg-warning";
+                        } else {
+                            progressBar.className = "progress-bar bg-success";
+                        }
+                        
+                        renderContacts(data.contacts);
+                        addLogEntry(`Loaded ${data.count} contacts (${data.namedCount} with real names)`);
+                    } else {
+                        addLogEntry('Failed to fetch contacts', 'error');
+                        contactsList.innerHTML = '<div class="list-group-item text-center text-danger py-3">Failed to load contacts</div>';
+                    }
+                } catch (error) {
+                    addLogEntry(`Error fetching contacts: ${error.message}`, 'error');
+                    contactsList.innerHTML = '<div class="list-group-item text-center text-danger py-3">Error loading contacts</div>';
+                }
+            }
+            
+            // Render contacts in the UI
+            function renderContacts(contacts) {
+                if (!contacts || contacts.length === 0) {
+                    contactsList.innerHTML = '<div class="list-group-item text-center py-3">No contacts available</div>';
+                    return;
+                }
+                
+                // Sort contacts by name
+                contacts.sort((a, b) => {
+                    const nameA = a.name || extractPhoneNumber(a.jid);
+                    const nameB = b.name || extractPhoneNumber(b.jid);
+                    return nameA.localeCompare(nameB);
+                });
+                
+                // Build HTML
+                let html = '';
+                
+                contacts.forEach(contact => {
+                    const displayName = contact.name || extractPhoneNumber(contact.jid);
+                    const unreadBadge = contact.unreadCount > 0 ? 
+                        `<span class="badge bg-danger rounded-pill">${contact.unreadCount}</span>` : '';
+                    
+                    html += `
+                    <button type="button" class="list-group-item list-group-item-action contact-item" 
+                        data-jid="${contact.jid}" 
+                        data-name="${displayName}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-person-circle me-2"></i>
+                                <span class="contact-name">${displayName}</span>
+                            </div>
+                            ${unreadBadge}
+                        </div>
+                    </button>
+                    `;
+                });
+                
+                contactsList.innerHTML = html;
+                
+                // Add event listeners to contact items
+                document.querySelectorAll('.contact-item').forEach(item => {
+                    item.addEventListener('click', function() {
+                        // Remove active class from all contacts
+                        document.querySelectorAll('.contact-item').forEach(el => {
+                            el.classList.remove('active');
+                        });
+                        
+                        // Add active class to clicked contact
+                        this.classList.add('active');
+                        
+                        // Update selected contact info
+                        const jid = this.getAttribute('data-jid');
+                        const name = this.getAttribute('data-name');
+                        
+                        selectedContactJid.value = jid;
+                        selectedContactName.textContent = name;
+                        
+                        // Enable the message textarea and send button
+                        messageText.disabled = false;
+                        sendMessageBtn.disabled = false;
+                        
+                        // Update recent messages
+                        recentMessages.innerHTML = '<p class="text-muted text-center">No recent messages to display</p>';
+                    });
+                });
+            }
+            
+            // Extract phone number from JID
+            function extractPhoneNumber(jid) {
+                if (!jid) return 'Unknown';
+                
+                // JID format is typically: "1234567890@s.whatsapp.net"
+                return jid.split('@')[0];
+            }
+            
+            // Send a message to a contact
+            async function sendMessage(jid, message) {
+                try {
+                    const response = await fetch('/api/send-message', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ jid, message })
+                    });
+                    
+                    if (response.ok) {
+                        addLogEntry(`Message sent to ${jid}`, 'success');
+                        messageSentModal.show();
+                        messageText.value = '';
+                        
+                        // Add to recent messages
+                        const now = new Date().toLocaleTimeString();
+                        const messageHtml = `
+                        <div class="sent-message mb-2">
+                            <div class="text-end text-muted small">${now}</div>
+                            <div class="bg-primary text-white p-2 rounded">
+                                ${message}
+                            </div>
+                        </div>
+                        `;
+                        
+                        if (recentMessages.innerHTML.includes('No recent messages')) {
+                            recentMessages.innerHTML = messageHtml;
+                        } else {
+                            recentMessages.innerHTML += messageHtml;
+                        }
+                        
+                        // Scroll to bottom
+                        recentMessages.scrollTop = recentMessages.scrollHeight;
+                        
+                        return true;
+                    } else {
+                        const data = await response.json();
+                        addLogEntry(`Failed to send message: ${data.error}`, 'error');
+                        alert(`Failed to send message: ${data.error}`);
+                        return false;
+                    }
+                } catch (error) {
+                    addLogEntry(`Error sending message: ${error.message}`, 'error');
+                    alert(`Error sending message: ${error.message}`);
+                    return false;
+                }
+            }
+            
+            // Contact search functionality
+            contactSearch.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                document.querySelectorAll('.contact-item').forEach(item => {
+                    const name = item.querySelector('.contact-name').textContent.toLowerCase();
+                    const jid = item.getAttribute('data-jid').toLowerCase();
+                    const shouldShow = name.includes(searchTerm) || jid.includes(searchTerm);
+                    item.style.display = shouldShow ? '' : 'none';
+                });
+            });
+            
+            // Refresh contacts button event
+            refreshContactsBtn.addEventListener('click', async function() {
+                this.disabled = true;
+                this.innerHTML = '<i class="bi bi-arrow-repeat spinner-border spinner-border-sm"></i> Refreshing...';
+                
+                try {
+                    // Send a command to the bot to refresh contacts
+                    const response = await fetch('/api/send-message', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            jid: 'me@s.whatsapp.net', // This will be ignored in processing
+                            message: 'refresh contacts' // This triggers the contact refresh command
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        addLogEntry('Contact refresh requested', 'info');
+                        
+                        // Wait a moment for the contacts to be refreshed
+                        await new Promise(resolve => setTimeout(resolve, 5000));
+                        
+                        // Now fetch the updated contacts
+                        await fetchContacts();
+                        
+                        addLogEntry('Contacts refreshed successfully', 'success');
+                    } else {
+                        addLogEntry('Failed to request contact refresh', 'error');
+                    }
+                } catch (error) {
+                    addLogEntry(`Error refreshing contacts: ${error.message}`, 'error');
+                } finally {
+                    this.disabled = false;
+                    this.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Refresh Contacts';
+                }
+            });
+            
+            // Handle message form submission
+            messageForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const jid = selectedContactJid.value;
+                const message = messageText.value.trim();
+                
+                if (!jid) {
+                    alert('Please select a contact first');
+                    return;
+                }
+                
+                if (!message) {
+                    alert('Please enter a message to send');
+                    return;
+                }
+                
+                sendMessageBtn.disabled = true;
+                sendMessageBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Sending...';
+                
+                const success = await sendMessage(jid, message);
+                
+                sendMessageBtn.disabled = false;
+                sendMessageBtn.innerHTML = '<i class="bi bi-send"></i> Send Message';
+                
+                if (success) {
+                    // Already handled in sendMessage function
+                }
+            });
+            
+            // This is a function to restart the bot used by both restart buttons
+            async function restartBot() {
+                try {
+                    const response = await fetch('/api/restart', { method: 'POST' });
+                    if (response.ok) {
+                        addLogEntry('Bot restart initiated');
+                        alert('Bot restart initiated. This may take a few moments.');
+                    } else {
+                        addLogEntry('Failed to restart bot', 'error');
+                        alert('Failed to restart the bot. Please check the server logs.');
+                    }
+                } catch (error) {
+                    addLogEntry(`Error restarting bot: ${error.message}`, 'error');
+                    alert(`Error: ${error.message}`);
+                }
+            }
+            
+            // Update the existing restart button to use the common function
+            restartBotBtn.addEventListener('click', function() {
+                if (confirm('Are you sure you want to restart the bot?')) {
+                    restartBot();
+                }
+            });
+            
+            // Initialize the contacts panel
+            fetchContacts();
+            
+            // Initialize the rest of the panels
+            fetchCommands();
+            fetchStats();
+            
+            // Update stats every 30 seconds
+            setInterval(fetchStats, 30000);
+
+            // Message sent modal
+            const messageSentModal = new bootstrap.Modal(document.getElementById('messageSentModal'));
+        });
+    </script>
+</body>
+</html> 

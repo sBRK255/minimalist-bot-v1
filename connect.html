@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Connection Panel - Minimalist Bot</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .header {
+            background-color: #075E54;
+            color: white;
+            padding: 1.5rem 0;
+            margin-bottom: 2rem;
+        }
+        .connection-card {
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        .card-header {
+            background-color: #128C7E;
+            color: white;
+            font-weight: bold;
+        }
+        .status-badge {
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+        }
+        .status-connected {
+            background-color: #25D366;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+        .status-disconnected {
+            background-color: #dc3545;
+            color: white;
+        }
+        .status-connecting {
+            background-color: #ffc107;
+            color: black;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+        .qr-container {
+            display: flex;
+            justify-content: center;
+            padding: 1.5rem;
+            background-color: white;
+            margin: 1rem 0;
+            border-radius: 8px;
+        }
+        #qrCode {
+            max-width: 250px;
+            max-height: 250px;
+        }
+        .btn-whatsapp {
+            background-color: #25D366;
+            color: white;
+            border: none;
+            transition: all 0.3s;
+        }
+        .btn-whatsapp:hover {
+            background-color: #128C7E;
+            color: white;
+            transform: translateY(-2px);
+        }
+        .nav-pills .nav-link.active {
+            background-color: #25D366;
+        }
+        .nav-pills .nav-link {
+            color: #075E54;
+        }
+        .pairing-code {
+            font-size: 1.5rem;
+            letter-spacing: 3px;
+            background-color: #f1f1f1;
+            padding: 1rem;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+            margin: 1rem 0;
+        }
+        .connection-log {
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: #343a40;
+            color: #fff;
+            padding: 1rem;
+            font-family: monospace;
+            border-radius: 5px;
+        }
+        .log-entry {
+            margin-bottom: 5px;
+            border-bottom: 1px solid #495057;
+            padding-bottom: 5px;
+        }
+        .panel-nav {
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1><i class="bi bi-whatsapp"></i> Connection Panel</h1>
+                <div class="d-flex align-items-center">
+                    <span id="connectionStatus" class="status-badge status-disconnected me-3">
+                        <i class="bi bi-plug-fill"></i> Disconnected
+                    </span>
+                    <div class="dropdown">
+                        <button class="btn btn-light dropdown-toggle" type="button" id="navDropdown" data-bs-toggle="dropdown">
+                            <i class="bi bi-list"></i> Navigation
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/"><i class="bi bi-house-fill"></i> Home</a></li>
+                            <li><a class="dropdown-item" href="/connect"><i class="bi bi-whatsapp"></i> Connection Panel</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/admin"><i class="bi bi-gear-fill"></i> Admin Panel</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="row">
+            <!-- Connection Panel -->
+            <div class="col-lg-8 offset-lg-2">
+                <div class="connection-card card">
+                    <div class="card-header">
+                        <ul class="nav nav-pills panel-nav" id="connectionTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="qr-tab" data-bs-toggle="pill" data-bs-target="#qr-content" type="button" role="tab">
+                                    <i class="bi bi-qr-code"></i> QR Code Connection
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="pairing-tab" data-bs-toggle="pill" data-bs-target="#pairing-content" type="button" role="tab">
+                                    <i class="bi bi-key-fill"></i> Pairing Code Connection
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content" id="connectionTabContent">
+                            <!-- QR Code Tab -->
+                            <div class="tab-pane fade show active" id="qr-content" role="tabpanel" aria-labelledby="qr-tab">
+                                <div class="text-center mb-3">
+                                    <h3>Connect with QR Code</h3>
+                                    <p class="text-muted">Scan the QR code below with your WhatsApp app to connect the bot</p>
+                                </div>
+                                
+                                <div id="qrSectionContent">
+                                    <div id="qrContainer" class="qr-container d-none">
+                                        <img id="qrCode" src="" alt="WhatsApp QR Code">
+                                    </div>
+                                    
+                                    <div class="text-center mt-3">
+                                        <button id="generateQrBtn" class="btn btn-whatsapp btn-lg">
+                                            <i class="bi bi-qr-code-scan"></i> Generate QR Code
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Pairing Code Tab -->
+                            <div class="tab-pane fade" id="pairing-content" role="tabpanel" aria-labelledby="pairing-tab">
+                                <div class="text-center mb-3">
+                                    <h3>Connect with Pairing Code</h3>
+                                    <p class="text-muted">Enter your phone number to receive a pairing code</p>
+                                </div>
+                                
+                                <form id="pairingForm">
+                                    <div class="mb-3">
+                                        <label for="phoneNumber" class="form-label">Phone Number (without "+" or country code)</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">+</span>
+                                            <input type="text" class="form-control" id="phoneNumber" placeholder="123456789" required>
+                                        </div>
+                                        <div class="form-text">Example: 123456789 (without country code)</div>
+                                    </div>
+                                    
+                                    <div id="pairingCodeDisplay" class="pairing-code d-none">
+                                        <span id="pairingCode">12345678</span>
+                                    </div>
+                                    
+                                    <div class="text-center">
+                                        <button type="submit" id="getPairingCodeBtn" class="btn btn-whatsapp btn-lg">
+                                            <i class="bi bi-key-fill"></i> Get Pairing Code
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <!-- Connection Actions -->
+                        <div class="mt-4 pt-3 border-top">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <button id="disconnectBtn" class="btn btn-danger w-100 mb-2 disabled">
+                                        <i class="bi bi-power"></i> Disconnect
+                                    </button>
+                                </div>
+                                <div class="col-md-6">
+                                    <button id="checkStatusBtn" class="btn btn-secondary w-100 mb-2">
+                                        <i class="bi bi-arrow-clockwise"></i> Refresh Status
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Connection Log -->
+                <div class="card connection-card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-journal-text"></i> Connection Log</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="connectionLog" class="connection-log">
+                            <div class="log-entry">
+                                <span class="text-muted">[System]</span> Connection panel ready.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Socket.io -->
+    <script src="/socket.io/socket.io.js"></script>
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Connection Management Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const connectionStatus = document.getElementById('connectionStatus');
+            const qrContainer = document.getElementById('qrContainer');
+            const qrCode = document.getElementById('qrCode');
+            const generateQrBtn = document.getElementById('generateQrBtn');
+            const pairingForm = document.getElementById('pairingForm');
+            const pairingCodeDisplay = document.getElementById('pairingCodeDisplay');
+            const pairingCode = document.getElementById('pairingCode');
+            const disconnectBtn = document.getElementById('disconnectBtn');
+            const checkStatusBtn = document.getElementById('checkStatusBtn');
+            const connectionLog = document.getElementById('connectionLog');
+            
+            // Connection state
+            let isConnected = false;
+            
+            // Connect to Socket.io
+            const socket = io();
+            
+            // Add log entry
+            function addLogEntry(message, type = 'info') {
+                const now = new Date().toLocaleTimeString();
+                const entry = document.createElement('div');
+                entry.className = 'log-entry';
+                
+                let prefix;
+                if (type === 'error') {
+                    prefix = '<span class="text-danger">[Error]</span>';
+                } else if (type === 'success') {
+                    prefix = '<span class="text-success">[Success]</span>';
+                } else if (type === 'connecting') {
+                    prefix = '<span class="text-warning">[Connecting]</span>';
+                } else {
+                    prefix = '<span class="text-muted">[Info]</span>';
+                }
+                
+                entry.innerHTML = `${prefix} <span class="text-light">${now}</span> - ${message}`;
+                connectionLog.appendChild(entry);
+                connectionLog.scrollTop = connectionLog.scrollHeight;
+            }
+            
+            // Update connection status UI
+            function updateConnectionStatus(status) {
+                connectionStatus.className = 'status-badge';
+                
+                if (status === 'connected') {
+                    connectionStatus.classList.add('status-connected');
+                    connectionStatus.innerHTML = '<i class="bi bi-plug-fill"></i> Connected';
+                    disconnectBtn.classList.remove('disabled');
+                    isConnected = true;
+                    addLogEntry('Bot is connected to WhatsApp', 'success');
+                    generateQrBtn.classList.add('disabled');
+                } else if (status === 'connecting') {
+                    connectionStatus.classList.add('status-connecting');
+                    connectionStatus.innerHTML = '<i class="bi bi-hourglass-split"></i> Connecting...';
+                    disconnectBtn.classList.add('disabled');
+                } else {
+                    connectionStatus.classList.add('status-disconnected');
+                    connectionStatus.innerHTML = '<i class="bi bi-plug-fill"></i> Disconnected';
+                    disconnectBtn.classList.add('disabled');
+                    isConnected = false;
+                    generateQrBtn.classList.remove('disabled');
+                }
+            }
+            
+            // Socket.io events
+            socket.on('connection-status', (data) => {
+                updateConnectionStatus(data.status);
+                
+                if (data.qrCode) {
+                    qrCode.src = data.qrCode;
+                    qrContainer.classList.remove('d-none');
+                }
+            });
+            
+            socket.on('pairing-code', (data) => {
+                if (data.code) {
+                    pairingCode.textContent = data.code;
+                    pairingCodeDisplay.classList.remove('d-none');
+                    addLogEntry(`Received pairing code: ${data.code}`, 'success');
+                }
+            });
+            
+            // Generate QR Code
+            generateQrBtn.addEventListener('click', async () => {
+                try {
+                    updateConnectionStatus('connecting');
+                    addLogEntry('Starting connection with QR code authentication...', 'connecting');
+                    
+                    const response = await fetch('/api/connect/qr', {
+                        method: 'POST'
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        addLogEntry(data.message);
+                    } else {
+                        updateConnectionStatus('disconnected');
+                        addLogEntry(`Error: ${data.error}`, 'error');
+                    }
+                } catch (error) {
+                    updateConnectionStatus('disconnected');
+                    addLogEntry(`Connection error: ${error.message}`, 'error');
+                }
+            });
+            
+            // Pairing Code Form Submission
+            pairingForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const phoneNumber = document.getElementById('phoneNumber').value.trim();
+                
+                if (!phoneNumber) {
+                    addLogEntry('Phone number is required', 'error');
+                    return;
+                }
+                
+                try {
+                    updateConnectionStatus('connecting');
+                    addLogEntry(`Starting connection with pairing code for phone: +${phoneNumber}...`, 'connecting');
+                    
+                    const response = await fetch('/api/connect/pairing', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ phoneNumber })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        addLogEntry(data.message);
+                    } else {
+                        updateConnectionStatus('disconnected');
+                        addLogEntry(`Error: ${data.error}`, 'error');
+                    }
+                } catch (error) {
+                    updateConnectionStatus('disconnected');
+                    addLogEntry(`Connection error: ${error.message}`, 'error');
+                }
+            });
+            
+            // Disconnect Button
+            disconnectBtn.addEventListener('click', async () => {
+                if (!isConnected) return;
+                
+                try {
+                    const response = await fetch('/api/disconnect', {
+                        method: 'POST'
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        updateConnectionStatus('disconnected');
+                        qrContainer.classList.add('d-none');
+                        pairingCodeDisplay.classList.add('d-none');
+                        addLogEntry(data.message);
+                    } else {
+                        addLogEntry(`Error: ${data.error}`, 'error');
+                    }
+                } catch (error) {
+                    addLogEntry(`Disconnect error: ${error.message}`, 'error');
+                }
+            });
+            
+            // Check Status Button
+            checkStatusBtn.addEventListener('click', async () => {
+                try {
+                    const response = await fetch('/api/status');
+                    const data = await response.json();
+                    
+                    updateConnectionStatus(data.status);
+                    addLogEntry(`Status check: ${data.status}`);
+                    
+                    if (data.qrCode) {
+                        qrCode.src = data.qrCode;
+                        qrContainer.classList.remove('d-none');
+                    }
+                } catch (error) {
+                    addLogEntry(`Status check error: ${error.message}`, 'error');
+                }
+            });
+            
+            // Initial status check
+            checkStatusBtn.click();
+        });
+    </script>
+</body>
+</html> 

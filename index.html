@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimalist WhatsApp Bot</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .hero-section {
+            background-color: #25D366;
+            color: white;
+            padding: 4rem 0;
+            margin-bottom: 2rem;
+        }
+        .status-badge {
+            font-size: 1.2rem;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+        .feature-card {
+            transition: transform 0.3s ease;
+            margin-bottom: 20px;
+            height: 100%;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #25D366;
+        }
+        .footer {
+            background-color: #075E54;
+            color: white;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+        .credits {
+            background-color: #f1f1f1;
+            padding: 2rem 0;
+            margin-top: 2rem;
+        }
+        .github-link {
+            color: #075E54;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        .github-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="container text-center">
+            <h1 class="display-4 fw-bold">Minimalist WhatsApp Bot</h1>
+            <p class="lead">A simple, lightweight, and easy-to-use WhatsApp chatbot built with Node.js</p>
+            <div class="mt-4">
+                <span id="botStatusBadge" class="badge bg-light text-success status-badge">
+                    <i class="bi bi-robot"></i> Bot is Live
+                </span>
+            </div>
+            <div class="mt-3">
+                <a href="/connect" class="btn btn-light btn-lg me-2">
+                    <i class="bi bi-whatsapp"></i> Connection Panel
+                </a>
+                <a href="/admin" class="btn btn-primary btn-lg">
+                    <i class="bi bi-gear-fill"></i> Admin Panel
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Bot Features -->
+        <section>
+            <h2 class="text-center mb-4">Features</h2>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card feature-card shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">
+                                <i class="bi bi-chat-dots"></i>
+                            </div>
+                            <h5 class="card-title">Simple Commands</h5>
+                            <p class="card-text">Responds to basic commands like greetings, help requests, and time inquiries</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card feature-card shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">
+                                <i class="bi bi-gear"></i>
+                            </div>
+                            <h5 class="card-title">Easy Setup</h5>
+                            <p class="card-text">Quick to deploy with minimal configuration required</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card feature-card shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="feature-icon">
+                                <i class="bi bi-code-slash"></i>
+                            </div>
+                            <h5 class="card-title">Customizable</h5>
+                            <p class="card-text">Easily extendable to add your own custom commands and responses</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Repository Info -->
+        <section class="mt-5">
+            <h2 class="text-center mb-4">Repository</h2>
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-6 text-center text-md-start">
+                            <h4><i class="bi bi-github"></i> GitHub Repository</h4>
+                            <p>Access the source code and contribute to this project on GitHub.</p>
+                            <a href="https://github.com/sBRK255/minimalist-bot-v1" class="btn btn-dark" target="_blank">
+                                <i class="bi bi-code-square"></i> View Source Code
+                            </a>
+                        </div>
+                        <div class="col-md-6 border-start border-light">
+                            <pre class="mb-0 p-3 bg-light rounded"><code>git clone https://github.com/sBRK255/minimalist-bot-v1.git
+cd minimalist-bot-v1
+npm install
+npm start</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Credits Section -->
+        <section class="credits rounded shadow-sm">
+            <div class="container text-center">
+                <h2 class="mb-4">Credits</h2>
+                <p class="lead">Developed with ❤️ by <strong>sirtheprogrammer</strong></p>
+                <div class="row justify-content-center mt-4">
+                    <div class="col-md-8">
+                        <p>Special thanks to:</p>
+                        <ul class="list-unstyled">
+                            <li>@whiskeysockets/baileys library developers</li>
+                            <li>Node.js community</li>
+                            <li>All contributors and supporters</li>
+                        </ul>
+                        <p class="mt-3">
+                            <a href="https://github.com/sBRK255" class="github-link" target="_blank">
+                                <i class="bi bi-github"></i> sBRK255
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container text-center">
+            <p>Minimalist WhatsApp Bot &copy; 2023</p>
+            <p class="mb-0">
+                <small>This project is for educational purposes only. Always respect WhatsApp's terms of service.</small>
+            </p>
+        </div>
+    </footer>
+
+    <!-- Socket.io -->
+    <script src="/socket.io/socket.io.js"></script>
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Connect to Socket.io for real-time status updates
+            const socket = io();
+            const botStatusBadge = document.getElementById('botStatusBadge');
+            
+            // Update bot status based on Socket.io events
+            socket.on('connection-status', function(data) {
+                if (data.status === 'connected') {
+                    botStatusBadge.className = 'badge bg-light text-success status-badge';
+                    botStatusBadge.innerHTML = '<i class="bi bi-robot"></i> Bot is Live';
+                } else if (data.status === 'connecting') {
+                    botStatusBadge.className = 'badge bg-light text-warning status-badge';
+                    botStatusBadge.innerHTML = '<i class="bi bi-hourglass-split"></i> Bot is Connecting...';
+                } else {
+                    botStatusBadge.className = 'badge bg-light text-danger status-badge';
+                    botStatusBadge.innerHTML = '<i class="bi bi-robot"></i> Bot is Offline';
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

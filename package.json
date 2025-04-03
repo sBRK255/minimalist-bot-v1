@@ -1,0 +1,37 @@
+{
+  "name": "minimalist-v1",
+  "version": "1.0.0",
+  "description": "A simple WhatsApp chatbot using @whiskeysockets/baileys",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "start:pairing": "node index.js --pairing-code",
+    "web": "node server.js",
+    "dev": "concurrently \"npm run start\" \"npm run web\"",
+    "dev:pairing": "concurrently \"npm run start:pairing\" \"npm run web\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "whatsapp",
+    "bot",
+    "baileys",
+    "chatbot"
+  ],
+  "author": "sirtheprogrammer",
+  "license": "ISC",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.0",
+    "@whiskeysockets/baileys": "^6.17.16",
+    "express": "^4.18.2",
+    "qrcode": "^1.5.4",
+    "qrcode-terminal": "^0.12.0",
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sBRK255/minimalist-bot-v1.git"
+  }
+}
